@@ -9,7 +9,6 @@
 #import <Masonry/Masonry.h>
 #import <MJExtension/MJExtension.h>
 #import "AuditDepartModel.h"
-#import "SuperTreeTableView.h"
 
 @interface SuperTreeView()
 
@@ -46,21 +45,31 @@
     }];
 }
 
-- (void)setDepartsList:(NSArray *)departsList {
-    _departsList = departsList;
-    
+- (void)reloadData {
     // 第一个tableView
-    [self createSuperTableViewWithTag:9999 dataList:self.departsList];
+    if (self.getDataListBlock) {
+        SuperTreeTableView *tableView = [self createSuperTableViewWithTag:9999];
+        NSArray <NSString *>*dataList = self.getDataListBlock(self, tableView, -1);
+        [self reloadTableView:tableView dataList:dataList];
+    }
 }
 
-- (void)createSuperTableViewWithTag:(NSInteger)tag dataList:(NSArray <AuditDepartModel *>*)dataList{
+- (void)reloadTableView:(SuperTreeTableView *)tableView dataList:(NSArray <NSString *>*)dataList {
+    if (dataList.count == 0) {
+        return;
+    }
+    tableView.dataList = dataList;
+    [self.stackView addArrangedSubview:tableView];
+    [self.scrollView layoutIfNeeded];
+    [self.scrollView setContentOffset:CGPointMake(MAX(0, self.stackView.frame.size.width - self.scrollView.frame.size.width), 0)];
+}
+
+- (SuperTreeTableView *)createSuperTableViewWithTag:(NSInteger)tag {
     // 默认宽度屏幕的 1/3.5
     CGFloat width = UIScreen.mainScreen.bounds.size.width / 3.5;
     
     SuperTreeTableView *tableView = [[SuperTreeTableView alloc] init];
     tableView.tag = tag;
-    tableView.dataList = dataList;
-    [self.stackView addArrangedSubview:tableView];
     [tableView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.width.mas_equalTo(width);
     }];
@@ -69,6 +78,7 @@
     [tableView setCellClickedAction:^(SuperTreeTableView * _Nonnull tableView, NSInteger index) {
         [weakSelf tableView:tableView didSelectedAtIndex:index];
     }];
+    return tableView;
 }
 
 - (void)tableView:(SuperTreeTableView *)tableView didSelectedAtIndex:(NSInteger)index {
@@ -84,14 +94,13 @@
     }
     
     // 显示下级数据
-    AuditDepartModel *model = tableView.dataList[index];
-    if (model.childData.count > 0) {
-        
+    if (self.getDataListBlock) {
+
         SuperTreeTableView *lastTableView = self.stackView.subviews.lastObject;
-        [self createSuperTableViewWithTag:lastTableView.tag + 1 dataList:model.childData];
-        
-        [self.scrollView layoutIfNeeded];
-        [self.scrollView setContentOffset:CGPointMake(MAX(0, self.stackView.frame.size.width - self.scrollView.frame.size.width), 0)];
+        SuperTreeTableView *newTableView = [self createSuperTableViewWithTag:lastTableView.tag + 1];
+        newTableView.linkObject = lastTableView.linkObject;
+        NSArray <NSString *>*dataList = self.getDataListBlock(self, newTableView, index);
+        [self reloadTableView:newTableView dataList:dataList];
     }
 }
 

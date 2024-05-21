@@ -62,8 +62,22 @@
         make.top.equalTo(self.view.mas_safeAreaLayoutGuideTop);
         make.bottom.equalTo(self.view.mas_safeAreaLayoutGuideBottom);
     }];
-    
-    treeView.departsList = self.departsList;
+
+    treeView.getDataListBlock = ^NSArray<NSString *> * _Nonnull(SuperTreeView * _Nonnull treeView, SuperTreeTableView * _Nonnull tableView, NSInteger selectedIndex) {
+
+        NSArray <AuditDepartModel *>*models;
+        if (selectedIndex == -1) {
+            // 第一级
+            models = self.departsList;
+        } else {
+            // 第 i 级
+            NSArray <AuditDepartModel *>*linkObjects = (NSArray <AuditDepartModel *>*)tableView.linkObject;
+            models = linkObjects[selectedIndex].childData;
+        }
+        tableView.linkObject = models;
+        return [models valueForKey:@"name"];
+    };
+    [treeView reloadData];
 }
 
 

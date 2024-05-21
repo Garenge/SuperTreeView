@@ -7,12 +7,15 @@
 
 #import <UIKit/UIKit.h>
 #import "AuditDepartModel.h"
+#import "SuperTreeTableView.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface SuperTreeView : UIView
 
-@property (nonatomic, strong) NSArray <AuditDepartModel *>*departsList;
+- (void)reloadData;
+
+@property (nonatomic, copy) NSArray <NSString *>*(^getDataListBlock)(SuperTreeView *treeView, SuperTreeTableView *tableView, NSInteger selectedIndex);
 
 @end
 

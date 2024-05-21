@@ -10,9 +10,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface SuperTreeTableView : UITableView
+@interface SuperTreeTableView : UIView
 
-@property (nonatomic, strong) NSArray <AuditDepartModel *> *dataList;
+@property (nonatomic, strong) UITableView *tableView;
+
+@property (nonatomic, strong) UILabel *topLabel;
+@property (nonatomic, strong) UIView *topView;
+
+/// 某一级的tableView关联的产品, 表示的是点中这个tableView之后
+@property (nonatomic, strong) NSObject *linkObject;
+@property (nonatomic, strong) NSArray <NSString *> *dataList;
 
 @property (nonatomic, copy) void(^cellClickedAction)(SuperTreeTableView *tableView, NSInteger index);
 
